@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% set active = "categorias" %}
+{% block title %}{{ "Editar categoría" if category.id else "Nueva categoría" }}{% endblock %}
+{% block content %}
+<a class="back-link" href="/categorias">← Categorías</a>
+<section class="form-heading"><p class="eyebrow">Catálogo · Categorías</p><h1>{{ "Editar categoría" if category.id else "Nueva categoría" }}</h1></section>
+{% if error %}<p class="alert alert-error" role="alert">{{ error }}</p>{% endif %}
+<form class="edit-form" method="post" action="{{ '/categorias/' ~ category.id ~ '/editar' if category.id else '/categorias' }}">
+  <label for="description">Descripción <span class="required">*</span></label>
+  <input id="description" name="description" type="text" maxlength="120" value="{{ category.description }}" required autofocus>
+  <label for="color">Color de categoría</label>
+  <div class="color-field"><input id="color" name="color" type="color" value="{{ category.color }}"><span>El color identifica visualmente la categoría.</span></div>
+  <label for="additional_info">Información adicional</label>
+  <textarea id="additional_info" name="additional_info" rows="5" placeholder="Notas opcionales">{{ category.additional_info }}</textarea>
+  <div class="form-actions"><a class="button button-quiet" href="/categorias">Cancelar</a><button class="button button-primary" type="submit">Guardar categoría</button></div>
+</form>
+{% endblock %}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5ef">
+  <title>{% block title %}Biblioteca{% endblock %} | Estante</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/libros"><span class="brand-mark" aria-hidden="true">E</span><span>Estante</span></a>
+    <nav class="navigation" aria-label="Navegación principal">
+      <a class="{% if active == 'libros' %}active{% endif %}" href="/libros">Libros</a>
+      <a class="{% if active == 'categorias' %}active{% endif %}" href="/categorias">Categorías</a>
+    </nav>
+    <span class="topbar-note">Gestión de biblioteca</span>
+  </header>
+  <main class="page-shell">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

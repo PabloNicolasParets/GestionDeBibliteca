@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set active = "libros" %}
+{% block title %}Libros{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <div><p class="eyebrow">Colección</p><h1>Libros</h1><p class="lede">Consulta y mantén el catálogo de la biblioteca.</p></div>
+  <a class="button button-primary" href="/libros/nuevo">Nuevo libro</a>
+</section>
+{% if notice %}<p class="alert alert-success" role="status">{{ notice }}</p>{% endif %}
+<form class="filter-bar" method="get" action="/libros">
+  <label class="search-field" for="q"><span class="sr-only">Buscar por nombre</span><input id="q" name="q" type="search" value="{{ search }}" placeholder="Buscar por nombre"></label>
+  <label class="sr-only" for="categoria">Filtrar por categoría</label>
+  <select id="categoria" name="categoria"><option value="">Todas las categorías</option>{% for category in categories %}<option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>{{ category.description }}</option>{% endfor %}</select>
+  <button class="button button-quiet" type="submit">Filtrar</button>
+  {% if search or selected_category %}<a class="text-link reset-link" href="/libros">Limpiar</a>{% endif %}
+</form>
+{% if books %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Nombre</th><th>Categoría</th><th>Datos adicionales</th><th class="actions-heading">Acciones</th></tr></thead>
+    <tbody>{% for book in books %}
+      <tr>
+        <td class="book-title">{{ book.name }}</td>
+        <td><span class="category-name"><span class="color-swatch" style="--swatch: {{ book.category.color }}" aria-hidden="true"></span>{{ book.category.description }}</span></td>
+        <td class="muted">{{ book.additional_info or "Sin datos adicionales" }}</td>
+        <td class="row-actions"><a class="button button-quiet" href="/libros/{{ book.id }}/editar">Editar</a><form method="post" action="/libros/{{ book.id }}/eliminar" onsubmit="return confirm('¿Eliminar este libro?')"><button class="button button-danger" type="submit">Eliminar</button></form></td>
+      </tr>
+    {% endfor %}</tbody>
+  </table>
+</div>
+{% else %}
+<section class="empty-state"><span class="empty-index">{{ "01" if not categories else "02" }}</span><h2>{{ "Crea una categoría primero" if not categories else "No hay libros para mostrar" }}</h2><p>{{ "Cada libro debe pertenecer a una categoría." if not categories else "Agrega un libro o cambia los filtros." }}</p><a class="text-link" href="{{ '/categorias/nueva' if not categories else '/libros/nuevo' }}">{{ "Crear categoría" if not categories else "Agregar libro" }} <span aria-hidden="true">→</span></a></section>
+{% endif %}
+{% endblock %}

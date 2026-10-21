@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% set active = "libros" %}
+{% block title %}{{ "Editar libro" if book.id else "Nuevo libro" }}{% endblock %}
+{% block content %}
+<a class="back-link" href="/libros">← Libros</a>
+<section class="form-heading"><p class="eyebrow">Catálogo · Libros</p><h1>{{ "Editar libro" if book.id else "Nuevo libro" }}</h1></section>
+{% if error %}<p class="alert alert-error" role="alert">{{ error }}</p>{% endif %}
+<form class="edit-form" method="post" action="{{ '/libros/' ~ book.id ~ '/editar' if book.id else '/libros' }}">
+  <label for="name">Nombre <span class="required">*</span></label>
+  <input id="name" name="name" type="text" maxlength="180" value="{{ book.name }}" required autofocus>
+  <label for="category_id">Categoría <span class="required">*</span></label>
+  <select id="category_id" name="category_id" required><option value="">Selecciona una categoría</option>{% for category in categories %}<option value="{{ category.id }}" {% if book.category_id == category.id %}selected{% endif %}>{{ category.description }}</option>{% endfor %}</select>
+  <label for="additional_info">Datos adicionales</label>
+  <textarea id="additional_info" name="additional_info" rows="5" placeholder="Autor, edición u otras notas">{{ book.additional_info }}</textarea>
+  <div class="form-actions"><a class="button button-quiet" href="/libros">Cancelar</a><button class="button button-primary" type="submit">Guardar libro</button></div>
+</form>
+{% endblock %}
