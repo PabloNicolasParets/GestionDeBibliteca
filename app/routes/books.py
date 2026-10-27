@@ -3,10 +3,12 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.auth import get_optional_user, require_admin, template_context
 from app.database import get_db
-from app.models import Book
+from app.models import Book, User
 from app.services import books as book_service
 from app.services import categories as category_service
+from app.services import loans as loan_service
 
 router = APIRouter(prefix="/libros", tags=["libros"])
 templates = Jinja2Templates(directory="app/templates")
@@ -16,13 +18,16 @@ def render_form(
     request: Request,
     book: Book,
     categories,
+    user: User,
     error: str = "",
     code: int = 200,
 ):
     return templates.TemplateResponse(
         request=request,
         name="books/form.html",
-        context={"book": book, "categories": categories, "error": error},
+        context=template_context(
+            request, user, book=book, categories=categories, error=error
+        ),
         status_code=code,
     )
 
@@ -33,28 +38,43 @@ def book_list(
     q: str = "",
     categoria: int | None = None,
     aviso: str = "",
+    error: str = "",
     db: Session = Depends(get_db),
+    user: User | None = Depends(get_optional_user),
 ):
-    notices = {"eliminado": "Libro eliminado.", "actualizado": "Libro actualizado.", "creado": "Libro creado."}
+    notices = {
+        "eliminado": "Libro eliminado.",
+        "actualizado": "Libro actualizado.",
+        "creado": "Libro creado.",
+    }
+    errors = {"prestamo_activo": "No se puede eliminar un libro que tiene un préstamo activo."}
     return templates.TemplateResponse(
         request=request,
         name="books/list.html",
-        context={
-            "books": book_service.list_books(db, q.strip(), categoria),
-            "categories": category_service.list_categories(db),
-            "search": q,
-            "selected_category": categoria,
-            "notice": notices.get(aviso, ""),
-        },
+        context=template_context(
+            request,
+            user,
+            books=book_service.list_books(db, q.strip(), categoria),
+            categories=category_service.list_categories(db),
+            active_loans=loan_service.active_loans_by_book(db),
+            search=q,
+            selected_category=categoria,
+            notice=notices.get(aviso, ""),
+            error=errors.get(error, ""),
+        ),
     )
 
 
 @router.get("/nuevo")
-def new_book(request: Request, db: Session = Depends(get_db)):
+def new_book(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+):
     categories = category_service.list_categories(db)
     if not categories:
         return RedirectResponse("/categorias/nueva", status_code=status.HTTP_303_SEE_OTHER)
-    return render_form(request, Book(name="", additional_info=""), categories)
+    return render_form(request, Book(name="", additional_info=""), categories, user)
 
 
 @router.post("")
@@ -64,29 +84,35 @@ def create_book(
     category_id: str = Form(...),
     additional_info: str = Form(""),
     db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
 ):
     categories = category_service.list_categories(db)
     book = Book(name=name.strip(), additional_info=additional_info.strip())
     if not book.name:
-        return render_form(request, book, categories, "Escribe el nombre del libro.", 422)
+        return render_form(request, book, categories, user, "Escribe el nombre del libro.", 422)
     if len(book.name) > 180:
-        return render_form(request, book, categories, "El nombre admite hasta 180 caracteres.", 422)
+        return render_form(request, book, categories, user, "El nombre admite hasta 180 caracteres.", 422)
     try:
         selected_category = category_service.get_category(db, int(category_id))
     except ValueError:
         selected_category = None
     if selected_category is None:
-        return render_form(request, book, categories, "Selecciona una categoría válida.", 422)
+        return render_form(request, book, categories, user, "Selecciona una categoría válida.", 422)
     book_service.create_book(db, book.name, selected_category.id, book.additional_info)
     return RedirectResponse("/libros?aviso=creado", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/{book_id}/editar")
-def edit_book(book_id: int, request: Request, db: Session = Depends(get_db)):
+def edit_book(
+    book_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+):
     book = book_service.get_book(db, book_id)
     if book is None:
         raise HTTPException(status_code=404, detail="Libro no encontrado")
-    return render_form(request, book, category_service.list_categories(db))
+    return render_form(request, book, category_service.list_categories(db), user)
 
 
 @router.post("/{book_id}/editar")
@@ -97,6 +123,7 @@ def update_book(
     category_id: str = Form(...),
     additional_info: str = Form(""),
     db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
 ):
     book = book_service.get_book(db, book_id)
     if book is None:
@@ -105,23 +132,29 @@ def update_book(
     book.additional_info = additional_info.strip()
     categories = category_service.list_categories(db)
     if not book.name:
-        return render_form(request, book, categories, "Escribe el nombre del libro.", 422)
+        return render_form(request, book, categories, user, "Escribe el nombre del libro.", 422)
     if len(book.name) > 180:
-        return render_form(request, book, categories, "El nombre admite hasta 180 caracteres.", 422)
+        return render_form(request, book, categories, user, "El nombre admite hasta 180 caracteres.", 422)
     try:
         selected_category = category_service.get_category(db, int(category_id))
     except ValueError:
         selected_category = None
     if selected_category is None:
-        return render_form(request, book, categories, "Selecciona una categoría válida.", 422)
+        return render_form(request, book, categories, user, "Selecciona una categoría válida.", 422)
     book_service.update_book(db, book, book.name, selected_category.id, book.additional_info)
     return RedirectResponse("/libros?aviso=actualizado", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/{book_id}/eliminar")
-def remove_book(book_id: int, db: Session = Depends(get_db)):
+def remove_book(
+    book_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+):
     book = book_service.get_book(db, book_id)
     if book is None:
         raise HTTPException(status_code=404, detail="Libro no encontrado")
+    if book_service.has_active_loan(db, book.id):
+        return RedirectResponse("/libros?error=prestamo_activo", status_code=303)
     book_service.delete_book(db, book)
     return RedirectResponse("/libros?aviso=eliminado", status_code=status.HTTP_303_SEE_OTHER)

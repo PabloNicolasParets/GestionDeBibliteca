@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
-from app.models import Book
+from app.models import Book, Loan
 
 
 def list_books(db: Session, search: str = "", category_id: int | None = None) -> list[Book]:
@@ -43,3 +43,9 @@ def update_book(
 def delete_book(db: Session, book: Book) -> None:
     db.delete(book)
     db.commit()
+
+
+def has_active_loan(db: Session, book_id: int) -> bool:
+    return db.scalar(
+        select(Loan.id).where(Loan.book_id == book_id, Loan.returned_date.is_(None))
+    ) is not None

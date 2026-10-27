@@ -6,34 +6,34 @@
   <div>
     <p class="eyebrow">Organización del catálogo</p>
     <h1>Categorías</h1>
-    <p class="lede">Define las secciones que ordenan tus libros.</p>
+    <p class="lede">Consulta las secciones que organizan los libros.</p>
   </div>
-  <a class="button button-primary" href="/categorias/nueva">Nueva categoría</a>
+  {% if user and user.role == "administrador" %}<a class="button button-primary" href="/categorias/nueva">Nueva categoría</a>{% endif %}
 </section>
 {% if notice %}<p class="alert alert-success" role="status">{{ notice }}</p>{% endif %}
 {% if error %}<p class="alert alert-error" role="alert">{{ error }}</p>{% endif %}
 {% if categories %}
 <div class="table-wrap">
   <table>
-    <thead><tr><th>Categoría</th><th>Información adicional</th><th>Libros</th><th class="actions-heading">Acciones</th></tr></thead>
+    <thead><tr><th>Categoría</th><th>Información adicional</th><th>Libros</th>{% if user and user.role == "administrador" %}<th class="actions-heading">Acciones</th>{% endif %}</tr></thead>
     <tbody>
     {% for category in categories %}
       <tr>
         <td><span class="category-name"><span class="color-swatch" style="--swatch: {{ category.color }}" aria-label="Color {{ category.color }}"></span><span>{{ category.description }}</span></span></td>
         <td class="muted">{{ category.additional_info or "Sin información adicional" }}</td>
         <td><span class="count">{{ category.books|length }}</span></td>
-        <td class="row-actions">
+        {% if user and user.role == "administrador" %}<td class="row-actions">
           <a class="button button-quiet" href="/categorias/{{ category.id }}/editar">Editar</a>
           <form method="post" action="/categorias/{{ category.id }}/eliminar" onsubmit="return confirm('¿Eliminar esta categoría?')">
             <button class="button button-danger" type="submit">Eliminar</button>
           </form>
-        </td>
+        </td>{% endif %}
       </tr>
     {% endfor %}
     </tbody>
   </table>
 </div>
 {% else %}
-<section class="empty-state"><span class="empty-index">01</span><h2>Aún no hay categorías</h2><p>Crea una categoría para empezar a ordenar el catálogo.</p><a class="text-link" href="/categorias/nueva">Crear la primera categoría <span aria-hidden="true">→</span></a></section>
+<section class="empty-state"><span class="empty-index">01</span><h2>Aún no hay categorías</h2><p>{{ "Crea una categoría para empezar a ordenar el catálogo." if user and user.role == "administrador" else "Todavía no hay categorías disponibles." }}</p>{% if user and user.role == "administrador" %}<a class="text-link" href="/categorias/nueva">Crear la primera categoría <span aria-hidden="true">→</span></a>{% endif %}</section>
 {% endif %}
 {% endblock %}

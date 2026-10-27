@@ -4,17 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f5ef">
-  <title>{% block title %}Biblioteca{% endblock %} | Estante</title>
-  <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+  <title>{% block title %}Universo Este{% endblock %} | Universo Este</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}?v=3">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/libros"><span class="brand-mark" aria-hidden="true">E</span><span>Estante</span></a>
+    <a class="brand" href="/libros"><img class="brand-mark" src="{{ url_for('static', path='/universo-este-logo.png') }}" alt=""><span class="brand-copy"><span class="brand-name">Universo Este</span><br><span class="brand-subtitle">Parque educativo Este</span></span></a>
     <nav class="navigation" aria-label="Navegación principal">
       <a class="{% if active == 'libros' %}active{% endif %}" href="/libros">Libros</a>
       <a class="{% if active == 'categorias' %}active{% endif %}" href="/categorias">Categorías</a>
+      {% if user and user.role == "administrador" %}<a class="{% if active == 'prestamos' %}active{% endif %}" href="/prestamos">Préstamos</a>{% endif %}
     </nav>
-    <span class="topbar-note">Gestión de biblioteca</span>
+    {% if user %}
+    <div class="account-bar"><span>{{ user.username }}</span><form method="post" action="/logout"><button class="text-link" type="submit">Salir</button></form></div>
+    {% else %}
+    <a class="topbar-note" href="/login">Iniciar sesión</a>
+    {% endif %}
   </header>
   <main class="page-shell">
     {% block content %}{% endblock %}

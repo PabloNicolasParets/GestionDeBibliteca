@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set active = "prestamos" %}
+{% block title %}Prestar libro{% endblock %}
+{% block content %}
+<a class="back-link" href="/libros">← Libros</a>
+<section class="form-heading">
+  <p class="eyebrow">Préstamo de libro</p>
+  <h1>{{ book.name }}</h1>
+  <p class="lede">La fecha de devolución será el {{ due_date.strftime("%d/%m/%Y") }}.</p>
+</section>
+{% if error %}<p class="alert alert-error" role="alert">{{ error }}</p>{% endif %}
+<form class="edit-form" method="post" action="/prestamos/libros/{{ book.id }}">
+  <label for="borrower_name">Nombre de la persona <span class="required">*</span></label>
+  <input id="borrower_name" name="borrower_name" type="text" maxlength="120" value="{{ borrower_name }}" required autofocus>
+  <label for="borrower_dni">DNI <span class="required">*</span></label>
+  <input id="borrower_dni" name="borrower_dni" type="text" maxlength="30" value="{{ borrower_dni }}" required>
+  <div class="form-actions"><a class="button button-quiet" href="/libros">Cancelar</a><button class="button button-primary" type="submit">Registrar préstamo</button></div>
+</form>
+{% endblock %}

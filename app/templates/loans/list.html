@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% set active = "prestamos" %}
+{% block title %}Préstamos{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <div><p class="eyebrow">Seguimiento de libros</p><h1>Préstamos</h1><p class="lede">Consulta las fechas de devolución y registra los libros devueltos.</p></div>
+</section>
+{% if notice %}<p class="alert alert-success" role="status">{{ notice }}</p>{% endif %}
+{% if loans %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Libro</th><th>Persona</th><th>DNI</th><th>Fecha de préstamo</th><th>Devolución prevista</th><th>Estado</th><th class="actions-heading">Acciones</th></tr></thead>
+    <tbody>{% for loan in loans %}
+      <tr>
+        <td class="book-title">{{ loan.book_name }}</td>
+        <td>{{ loan.borrower_name }}</td>
+        <td>{{ loan.borrower_dni }}</td>
+        <td>{{ loan.loan_date.strftime("%d/%m/%Y") }}</td>
+        <td>{{ loan.due_date.strftime("%d/%m/%Y") }}</td>
+        <td>{% if loan.returned_date %}<span class="muted">Devuelto el {{ loan.returned_date.strftime("%d/%m/%Y") }}</span>{% else %}<span class="loan-status">Pendiente</span>{% endif %}</td>
+        <td class="row-actions">{% if not loan.returned_date %}<form method="post" action="/prestamos/{{ loan.id }}/devolver" onsubmit="return confirm('¿Registrar la devolución de este libro?')"><button class="button button-quiet" type="submit">Marcar devuelto</button></form>{% endif %}</td>
+      </tr>
+    {% endfor %}</tbody>
+  </table>
+</div>
+{% else %}
+<section class="empty-state"><span class="empty-index">01</span><h2>Aún no hay préstamos</h2><p>Registra un préstamo desde el listado de libros.</p><a class="text-link" href="/libros">Ver libros <span aria-hidden="true">→</span></a></section>
+{% endif %}
+{% endblock %}

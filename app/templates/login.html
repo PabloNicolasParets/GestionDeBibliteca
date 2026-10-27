@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión{% endblock %}
+{% block content %}
+<a class="back-link" href="/libros">← Volver al catálogo</a>
+<section class="form-heading"><p class="eyebrow">Acceso a la biblioteca</p><h1>Iniciar sesión</h1><p class="lede">Ingresa con tu cuenta para acceder a las funciones asignadas a tu rol.</p></section>
+{% if error %}<p class="alert alert-error" role="alert">{{ error }}</p>{% endif %}
+<form class="edit-form" method="post" action="/login">
+  <label for="username">Usuario</label>
+  <input id="username" name="username" type="text" autocomplete="username" maxlength="80" required autofocus>
+  <label for="password">Contraseña</label>
+  <input id="password" name="password" type="password" autocomplete="current-password" required>
+  <div class="form-actions"><a class="button button-quiet" href="/libros">Cancelar</a><button class="button button-primary" type="submit">Ingresar</button></div>
+</form>
+{% endblock %}
