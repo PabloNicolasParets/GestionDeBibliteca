@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% set active = "actividades" %}
+{% block title %}Actividades{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Parques Educativos y CEBs</p>
+    <h1>Grilla de actividades 2026</h1>
+    <p class="lede">Consulta las actividades, días y horarios.</p>
+  </div>
+</section>
+{% for group in activity_groups %}
+<section class="activity-group" aria-labelledby="activity-group-{{ loop.index }}">
+  <h2 id="activity-group-{{ loop.index }}">{{ group.name }}</h2>
+  <div class="table-wrap activity-table-wrap">
+    <table class="activity-table">
+      <thead><tr><th scope="col">Actividad</th><th scope="col">Días</th><th scope="col">Horario</th></tr></thead>
+      <tbody>
+      {% for activity in group.activities %}
+        {% for schedule in activity.schedules %}
+        <tr>
+          {% if loop.first %}<th scope="row" rowspan="{{ activity.schedules|length }}">{{ activity.name }}</th>{% endif %}
+          <td>{{ schedule[0] }}</td>
+          <td>{{ schedule[1] }}</td>
+        </tr>
+        {% endfor %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

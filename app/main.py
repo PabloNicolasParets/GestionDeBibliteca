@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.database import engine, get_db
 from app.models import Base
-from app.routes import auth, books, categories, loans
+from app.routes import activities, auth, books, categories, contact, loans
 from app.services.users import ensure_default_users
 
 ROOT = Path(__file__).resolve().parent
@@ -35,10 +35,17 @@ def create_app(database_engine: Engine = engine) -> FastAPI:
         max_age=60 * 60 * 8,
     )
     application.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
+    application.mount(
+        "/media",
+        StaticFiles(directory=ROOT.parent / "imagenes"),
+        name="media",
+    )
     application.include_router(auth.router)
     application.include_router(categories.router)
     application.include_router(books.router)
     application.include_router(loans.router)
+    application.include_router(contact.router)
+    application.include_router(activities.router)
 
     if database_engine is not engine:
         test_session_factory = sessionmaker(bind=database_engine, autoflush=False, autocommit=False)

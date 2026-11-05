@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% set active = "contacto" %}
+{% block body_class %}contact-page{% endblock %}
+{% block title %}Contacto{% endblock %}
+{% block background %}
+<video class="background-video" autoplay muted loop playsinline aria-hidden="true" tabindex="-1">
+  <source src="{{ url_for('media', path='/DJI_0285.MP4') }}" type="video/mp4">
+</video>
+{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Universo Este</p>
+    <h1>Contacto</h1>
+    <p class="lede">Encuéntranos y consulta nuestros horarios de atención.</p>
+  </div>
+</section>
+<div class="contact-grid">
+  <section class="contact-card" aria-labelledby="location-heading">
+    <p class="eyebrow">Dónde estamos</p>
+    <h2 id="location-heading">Ubicación</h2>
+    <address>Norberto de la Riestra esquina Ortiz de Ocampo.<br>Barrio Parque de la Rivera.</address>
+  </section>
+  <section class="contact-card" aria-labelledby="hours-heading">
+    <p class="eyebrow">Te esperamos</p>
+    <h2 id="hours-heading">Horario de atención</h2>
+    <table class="hours-table">
+      <tbody>
+        <tr><th scope="row">Lunes</th><td>9 a.m.–7:30 p.m.</td></tr>
+        <tr><th scope="row">Martes</th><td>9 a.m.–7:30 p.m.</td></tr>
+        <tr><th scope="row">Miércoles</th><td>9 a.m.–7:30 p.m.</td></tr>
+        <tr><th scope="row">Jueves</th><td>9 a.m.–7:30 p.m.</td></tr>
+        <tr><th scope="row">Viernes</th><td>9 a.m.–7:30 p.m.</td></tr>
+        <tr><th scope="row">Sábado</th><td>Cerrado</td></tr>
+        <tr><th scope="row">Domingo</th><td>Cerrado</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

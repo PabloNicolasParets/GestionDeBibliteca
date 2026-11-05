@@ -78,6 +78,58 @@ def test_category_and_book_crud(client):
     assert "Clásicos" not in deleted_category.text
 
 
+def test_background_image_is_available(client):
+    response = client.get("/static/fondo-biblioteca.png")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/png"
+
+
+def test_contact_page_shows_location_and_opening_hours(client):
+    response = client.get("/contacto")
+
+    assert response.status_code == 200
+    assert 'class="contact-page"' in response.text
+    assert "/media/DJI_0285.MP4" in response.text
+    assert "Norberto de la Riestra esquina Ortiz de Ocampo" in response.text
+    assert "Barrio Parque de la Rivera" in response.text
+    for day in ("Lunes", "Martes", "Miércoles", "Jueves", "Viernes"):
+        assert day in response.text
+        assert "9 a.m.–7:30 p.m." in response.text
+    for day in ("Sábado", "Domingo"):
+        assert day in response.text
+        assert "Cerrado" in response.text
+    assert 'href="/contacto">Contacto</a>' in response.text
+
+
+def test_contact_background_video_is_served_only_for_contact_page(client):
+    books_response = client.get("/libros")
+    assert "/media/DJI_0285.MP4" not in books_response.text
+
+    video_response = client.head("/media/DJI_0285.MP4")
+    assert video_response.status_code == 200
+    assert video_response.headers["content-type"] == "video/mp4"
+
+
+def test_activities_page_shows_schedule_in_tables_and_pdf_is_removed(client):
+    response = client.get("/actividades")
+
+    assert response.status_code == 200
+    assert "Grilla de actividades 2026" in response.text
+    assert "href=\"/actividades\">Actividades</a>" in response.text
+    assert "Entrenamiento funcional (+15 años)" in response.text
+    assert "Aprendiendo inglés a través del arte (6 a 10 años)" in response.text
+    assert "Punto digital / validación de app Mi Argentina" in response.text
+    assert 'class="activity-table"' in response.text
+    assert "<iframe" not in response.text
+    assert ".pdf" not in response.text
+
+    pdf_response = client.get(
+        "/media/GRILLA ACTIVIDADES 2026 - PARQUES EDUCATIVOS y CEBs .docx.pdf"
+    )
+    assert pdf_response.status_code == 404
+
+
 def test_invalid_category_color_is_rejected(client):
     login_as_admin(client)
     response = client.post(
