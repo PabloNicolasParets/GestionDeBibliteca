@@ -98,6 +98,34 @@ def test_book_requires_existing_category(client):
     assert "categoría válida" in response.text
 
 
+def test_book_search_accepts_empty_category_filter(client):
+    login_as_admin(client)
+    client.post(
+        "/categorias",
+        data={"description": "Narrativa", "color": "#52796F", "additional_info": ""},
+    )
+    client.post(
+        "/libros",
+        data={
+            "name": "El universo escondido",
+            "category_id": "1",
+            "additional_info": "",
+        },
+    )
+
+    response = client.get(
+        "/libros", params={"q": "universo", "categoria": ""}
+    )
+
+    assert response.status_code == 200
+    assert "El universo escondido" in response.text
+
+    invalid_category = client.get(
+        "/libros", params={"q": "universo", "categoria": "no-es-un-numero"}
+    )
+    assert invalid_category.status_code == 422
+
+
 def test_guest_can_view_but_cannot_modify_catalog(client):
     listing = client.get("/libros")
     assert listing.status_code == 200

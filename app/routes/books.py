@@ -1,6 +1,9 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BeforeValidator
 from sqlalchemy.orm import Session
 
 from app.auth import get_optional_user, require_admin, template_context
@@ -12,6 +15,10 @@ from app.services import loans as loan_service
 
 router = APIRouter(prefix="/libros", tags=["libros"])
 templates = Jinja2Templates(directory="app/templates")
+
+
+def empty_category_to_none(value: object) -> object:
+    return None if value == "" else value
 
 
 def render_form(
@@ -36,7 +43,7 @@ def render_form(
 def book_list(
     request: Request,
     q: str = "",
-    categoria: int | None = None,
+    categoria: Annotated[int | None, BeforeValidator(empty_category_to_none)] = None,
     aviso: str = "",
     error: str = "",
     db: Session = Depends(get_db),
